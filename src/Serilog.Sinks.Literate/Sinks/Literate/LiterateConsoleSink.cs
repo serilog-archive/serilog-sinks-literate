@@ -21,7 +21,7 @@ using Serilog.Formatting.Display;
 using Serilog.Parsing;
 
 namespace Serilog.Sinks.Literate
-{
+{    
     class LiterateConsoleSink : ILogEventSink
     {
         const ConsoleColor Text = ConsoleColor.White,
@@ -44,6 +44,31 @@ namespace Serilog.Sinks.Literate
                            RawText = ConsoleColor.Yellow;
 
         const string StackFrameLinePrefix = "   ";
+
+        class LevelFormat
+        {
+            readonly string _description;
+            readonly ConsoleColor _color;
+
+            public LevelFormat(string description, ConsoleColor color)
+            {
+                _description = description;
+                _color = color;
+            }
+
+            public string Description { get { return _description; } }
+            public ConsoleColor Color { get { return _color; } }
+        }
+
+        readonly IDictionary<LogEventLevel, LevelFormat> _levels = new Dictionary<LogEventLevel, LevelFormat>
+        {
+            { LogEventLevel.Verbose, new LevelFormat("VRB", VerboseLevel) },
+            { LogEventLevel.Debug, new LevelFormat("DBG", DebugLevel) },
+            { LogEventLevel.Information, new LevelFormat("INF", InformationLevel) },
+            { LogEventLevel.Warning, new LevelFormat("WRN", WarningLevel) },
+            { LogEventLevel.Error, new LevelFormat("ERR", ErrorLevel) },
+            { LogEventLevel.Fatal, new LevelFormat("FTL", FatalLevel) },
+        };
 
         readonly IFormatProvider _formatProvider;
         readonly object _syncRoot = new object();
@@ -71,10 +96,13 @@ namespace Serilog.Sinks.Literate
                         var propertyToken = outputToken as PropertyToken;
                         if (propertyToken == null)
                         {
-                            RenderOutputToken(outputToken, outputProperties);
+                            RenderOutputTemplateTextToken(outputToken, outputProperties);
                         }
                         else switch (propertyToken.PropertyName)
                         {
+                            case OutputProperties.LevelPropertyName:
+                                RenderLevelToken(logEvent.Level);
+                                break;
                             case OutputProperties.MessagePropertyName:
                                 RenderMessageToken(logEvent);
                                 break;
@@ -82,7 +110,7 @@ namespace Serilog.Sinks.Literate
                                 RenderExceptionToken(propertyToken, outputProperties);
                                 break;
                             default:
-                                RenderOutputToken(outputToken, outputProperties);
+                                RenderOutputTemplatePropertyToken(outputToken, outputProperties);
                                 break;
                         }
                     }
@@ -104,8 +132,25 @@ namespace Serilog.Sinks.Literate
             }
         }
 
-        void RenderOutputToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+        void RenderOutputTemplatePropertyToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
         {
+            Console.ForegroundColor = Subtext;
+            outputToken.Render(outputProperties, Console.Out, _formatProvider);
+        }
+
+        void RenderLevelToken(LogEventLevel level)
+        {
+            LevelFormat format;
+            if (!_levels.TryGetValue(level, out format))
+                format = _levels[LogEventLevel.Warning];
+
+            Console.ForegroundColor = format.Color;
+            Console.Write(format.Description);
+        }
+
+        void RenderOutputTemplateTextToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+        {
+            Console.ForegroundColor = Punctuation;
             outputToken.Render(outputProperties, Console.Out, _formatProvider);
         }
 

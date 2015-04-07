@@ -24,7 +24,7 @@ namespace Serilog
     /// </summary>
     public static class LoggerConfigurationLiterateExtensions
     {
-        const string DefaultOutputTemplate = "{Message}{NewLine}{Exception}";
+        const string DefaultOutputTemplate = "[{Timestamp:HH:mm:ss} {Level}] {Message}{NewLine}{Exception}";
 
         /// <summary>
         /// Writes log events to <see cref="System.Console"/>, using pretty printing to display inline event data.
