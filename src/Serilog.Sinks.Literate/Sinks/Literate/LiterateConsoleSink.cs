@@ -36,7 +36,6 @@ namespace Serilog.Sinks.Literate
                            FatalLevel = ErrorLevel,
 
                            KeywordSymbol = ConsoleColor.Blue,
-                           BooleanSymbol = KeywordSymbol,
                            NumericSymbol = ConsoleColor.Magenta,
                            StringSymbol = ConsoleColor.Cyan,
                            OtherSymbol = ConsoleColor.Green,
