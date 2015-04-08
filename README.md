@@ -1,4 +1,4 @@
-# Serilog.Sinks.Literate
+# Serilog.Sinks.Literate [![Build status](https://ci.appveyor.com/api/projects/status/nrj4s6rbgtf4210m/branch/master?svg=true)](https://ci.appveyor.com/project/serilog/serilog-sinks-literate/branch/master)
 
 **Package** - [Serilog.Sinks.Literate](http://nuget.org/packages/serilog.sinks.literate) | **Platforms** - .NET 4.5+
 
