@@ -29,6 +29,6 @@ Or in XML [app-settings format](https://github.com/serilog/serilog/wiki/AppSetti
 ```xml
 <appSettings>
   <add key="serilog:using" value="Serilog.Sinks.Literate" />
-  <add key="serilog:write-to:LiterateConsole" value="" />
+  <add key="serilog:write-to:LiterateConsole" />
 </appSettings>
 ```
