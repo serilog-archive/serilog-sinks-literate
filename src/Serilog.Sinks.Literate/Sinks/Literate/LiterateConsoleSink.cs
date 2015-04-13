@@ -144,7 +144,15 @@ namespace Serilog.Sinks.Literate
                 format = _levels[LogEventLevel.Warning];
 
             Console.ForegroundColor = format.Color;
+
+            if (level == LogEventLevel.Error || level == LogEventLevel.Fatal)
+            {
+                Console.BackgroundColor = format.Color;
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
             Console.Write(format.Description);
+            Console.ResetColor();
         }
 
         void RenderOutputTemplateTextToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
