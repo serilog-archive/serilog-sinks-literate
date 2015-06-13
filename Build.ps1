@@ -1,17 +1,17 @@
 param(
-    [String] $majorMinor = "0.0",  # 2.0
+    [String] $majorMinor = "0.0",  # 1.4
     [String] $patch = "0",         # $env:APPVEYOR_BUILD_VERSION
+    [String] $branch = "private",  # $env:APPVEYOR_REPO_BRANCH
     [String] $customLogger = "",   # C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll
-    [Switch] $notouch,
-    [String] $sln                  # e.g serilog-sink-name
+    [Switch] $notouch
 )
 
-function Set-AssemblyVersions($informational, $assembly)
+function Set-AssemblyVersions($informational, $file, $assembly)
 {
     (Get-Content assets/CommonAssemblyInfo.cs) |
         ForEach-Object { $_ -replace """1.0.0.0""", """$assembly""" } |
         ForEach-Object { $_ -replace """1.0.0""", """$informational""" } |
-        ForEach-Object { $_ -replace """1.1.1.1""", """$($informational).0""" } |
+        ForEach-Object { $_ -replace """1.1.1.1""", """$file""" } |
         Set-Content assets/CommonAssemblyInfo.cs
 }
 
@@ -22,7 +22,7 @@ function Install-NuGetPackages($solution)
 
 function Invoke-MSBuild($solution, $customLogger)
 {
-    if ($customLogger)
+	if ($customLogger)
     {
         msbuild "$solution" /verbosity:minimal /p:Configuration=Release /logger:"$customLogger"
     }
@@ -44,42 +44,37 @@ function Invoke-NuGetPackSpec($nuspec, $version)
 
 function Invoke-NuGetPack($version)
 {
-    ls src/**/*.csproj |
-        Where-Object { -not ($_.Name -like "*net40*") } |
-        ForEach-Object { Invoke-NuGetPackProj $_ }
+    pushd .\src\Serilog.Sinks.Literate
+    Invoke-NuGetPackSpec "Serilog.Sinks.Literate.nuspec" $version
+    popd
 }
 
-function Invoke-Build($majorMinor, $patch, $customLogger, $notouch, $sln)
+function Invoke-Build($majorMinor, $patch, $branch, $customLogger, $notouch)
 {
-    $package="$majorMinor.$patch"
-    $slnfile = "$sln.sln"
-
-    Write-Output "$sln $package"
+    $target = (Get-Content ./CHANGES.md -First 1).Trim()
+    $file = "$target.$patch"
+    $package = $target
+    if ($branch -ne "master")
+    {
+        $package = "$target-pre-$patch"
+    }
 
     if (-not $notouch)
     {
         $assembly = "$majorMinor.0.0"
 
         Write-Output "Assembly version will be set to $assembly"
-        Set-AssemblyVersions $package $assembly
+        Set-AssemblyVersions $package $file $assembly
     }
 
-    Install-NuGetPackages $slnfile
+    Install-NuGetPackages "serilog-sinks-literate.sln"
     
-    Invoke-MSBuild $slnfile $customLogger
+    Invoke-MSBuild "serilog-sinks-literate-net40.sln" $customLogger
+    Invoke-MSBuild "serilog-sinks-literate.sln" $customLogger
 
     Invoke-NuGetPack $package
 }
 
 $ErrorActionPreference = "Stop"
+Invoke-Build $majorMinor $patch $branch $customLogger $notouch
 
-if (-not $sln)
-{
-    $slnfull = ls *.sln |
-        Where-Object { -not ($_.Name -like "*net40*") } |
-        Select -first 1
-
-    $sln = $slnfull.BaseName
-}
-
-Invoke-Build $majorMinor $patch $customLogger $notouch $sln
