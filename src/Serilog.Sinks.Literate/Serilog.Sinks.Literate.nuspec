@@ -11,7 +11,15 @@
     <iconUrl>http://serilog.net/images/serilog-sink-nuget.png</iconUrl>
     <tags>serilog logging</tags>
     <dependencies>
-      <dependency id="Serilog" version="[1.5.1,2)" />
+      <dependency id="Serilog" version="[1.5.7,2)" />
     </dependencies>
   </metadata>
+  <files>
+    <file src="bin\Release\Serilog.Sinks.Literate.dll" target="lib\net45" />
+    <file src="bin\Release\Serilog.Sinks.Literate.xml" target="lib\net45" />
+    <file src="bin\Release\Serilog.Sinks.Literate.pdb" target="lib\net45" />
+    <file src="bin40\Release\Serilog.Sinks.Literate.dll" target="lib\net40" />
+    <file src="bin40\Release\Serilog.Sinks.Literate.xml" target="lib\net40" />
+    <file src="bin40\Release\Serilog.Sinks.Literate.pdb" target="lib\net40" />
+  </files>
 </package>

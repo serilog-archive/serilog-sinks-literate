@@ -118,7 +118,13 @@ namespace Serilog.Sinks.Literate
             }
         }
 
-        void RenderExceptionToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+        void RenderExceptionToken(
+            MessageTemplateToken outputToken,
+#if NET40
+            IDictionary<string, LogEventPropertyValue> outputProperties)
+#else
+            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+#endif
         {
             var sw = new StringWriter();
             outputToken.Render(outputProperties, sw, _formatProvider);
@@ -131,7 +137,13 @@ namespace Serilog.Sinks.Literate
             }
         }
 
-        void RenderOutputTemplatePropertyToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+        void RenderOutputTemplatePropertyToken(
+            MessageTemplateToken outputToken,
+#if NET40
+            IDictionary<string, LogEventPropertyValue> outputProperties)
+#else
+            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+#endif
         {
             Console.ForegroundColor = Subtext;
             outputToken.Render(outputProperties, Console.Out, _formatProvider);
@@ -155,7 +167,13 @@ namespace Serilog.Sinks.Literate
             Console.ResetColor();
         }
 
-        void RenderOutputTemplateTextToken(MessageTemplateToken outputToken, IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+        void RenderOutputTemplateTextToken(
+            MessageTemplateToken outputToken,
+#if NET40
+            IDictionary<string, LogEventPropertyValue> outputProperties)
+#else
+            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+#endif
         {
             Console.ForegroundColor = Punctuation;
             outputToken.Render(outputProperties, Console.Out, _formatProvider);
