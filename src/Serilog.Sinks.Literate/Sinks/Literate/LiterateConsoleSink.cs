@@ -183,6 +183,8 @@ namespace Serilog.Sinks.Literate
 
                             if (scalar.Value is string && messagePropertyToken.Format == null && messagePropertyToken.Alignment == null)
                                 Console.Write(scalar.Value);
+                            else if (scalar.Value is bool && messagePropertyToken.Format == null && messagePropertyToken.Alignment == null)
+                                Console.Write(scalar.Value.ToString().ToLowerInvariant());
                             else
                                 messagePropertyToken.Render(logEvent.Properties, Console.Out, _formatProvider);
                         }
