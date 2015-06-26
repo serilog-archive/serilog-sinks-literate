@@ -109,7 +109,7 @@ namespace Serilog.Sinks.Literate
                                 RenderExceptionToken(propertyToken, outputProperties);
                                 break;
                             default:
-                                RenderOutputTemplatePropertyToken(outputToken, outputProperties);
+                                RenderOutputTemplatePropertyToken(propertyToken, outputProperties);
                                 break;
                         }
                     }
@@ -119,7 +119,7 @@ namespace Serilog.Sinks.Literate
         }
 
         void RenderExceptionToken(
-            MessageTemplateToken outputToken,
+            PropertyToken outputToken,
 #if NET40
             IDictionary<string, LogEventPropertyValue> outputProperties)
 #else
@@ -138,7 +138,7 @@ namespace Serilog.Sinks.Literate
         }
 
         void RenderOutputTemplatePropertyToken(
-            MessageTemplateToken outputToken,
+            PropertyToken outputToken,
 #if NET40
             IDictionary<string, LogEventPropertyValue> outputProperties)
 #else
@@ -146,7 +146,34 @@ namespace Serilog.Sinks.Literate
 #endif
         {
             Console.ForegroundColor = Subtext;
-            outputToken.Render(outputProperties, Console.Out, _formatProvider);
+
+            // This code is shared with MessageTemplateFormatter in the core Serilog
+            // project. Its purpose is to modify the way tokens are formatted to
+            // use "output template" rather than "message template" rules.
+
+            // First variation from normal rendering - if a property is missing,
+            // don't render anything (message templates render the raw token here).
+            LogEventPropertyValue propertyValue;
+            if (!outputProperties.TryGetValue(outputToken.PropertyName, out propertyValue))
+                return;
+
+            // Second variation; if the value is a scalar string, use literal
+            // rendering and support some additional formats: 'u' for uppercase
+            // and 'w' for lowercase.
+            var sv = propertyValue as ScalarValue;
+            if (sv != null && sv.Value is string)
+            {
+                var overridden = new Dictionary<string, LogEventPropertyValue>
+                {
+                    { outputToken.PropertyName, new LiteralStringValue((string) sv.Value) }
+                };
+
+                outputToken.Render(overridden, Console.Out, _formatProvider);
+            }
+            else
+            {
+                outputToken.Render(outputProperties, Console.Out, _formatProvider);
+            }
         }
 
         void RenderLevelToken(LogEventLevel level)
