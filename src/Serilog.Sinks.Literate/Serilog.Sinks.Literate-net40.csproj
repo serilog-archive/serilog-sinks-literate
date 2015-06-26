@@ -59,6 +59,7 @@
     <Compile Include="..\..\assets\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Sinks\Literate\LiteralStringValue.cs" />
     <Compile Include="Sinks\Literate\LiterateConsoleSink.cs" />
   </ItemGroup>
   <ItemGroup>
