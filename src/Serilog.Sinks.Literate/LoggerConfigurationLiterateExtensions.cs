@@ -42,10 +42,9 @@ namespace Serilog
             string outputTemplate = DefaultOutputTemplate,
             IFormatProvider formatProvider = null)
         {
-            if (sinkConfiguration == null) throw new ArgumentNullException("sinkConfiguration");
-            if (outputTemplate == null) throw new ArgumentNullException("outputTemplate");
+            if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
+            if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
             return sinkConfiguration.Sink(new LiterateConsoleSink(outputTemplate, formatProvider), restrictedToMinimumLevel);
         }
-
     }
 }

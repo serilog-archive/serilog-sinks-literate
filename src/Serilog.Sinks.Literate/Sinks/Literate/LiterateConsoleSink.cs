@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
@@ -46,17 +47,14 @@ namespace Serilog.Sinks.Literate
 
         class LevelFormat
         {
-            readonly string _description;
-            readonly ConsoleColor _color;
-
             public LevelFormat(string description, ConsoleColor color)
             {
-                _description = description;
-                _color = color;
+                Description = description;
+                Color = color;
             }
 
-            public string Description { get { return _description; } }
-            public ConsoleColor Color { get { return _color; } }
+            public string Description { get; }
+            public ConsoleColor Color { get; }
         }
 
         readonly IDictionary<LogEventLevel, LevelFormat> _levels = new Dictionary<LogEventLevel, LevelFormat>
@@ -75,14 +73,14 @@ namespace Serilog.Sinks.Literate
 
         public LiterateConsoleSink(string outputTemplate, IFormatProvider formatProvider)
         {
-            if (outputTemplate == null) throw new ArgumentNullException("outputTemplate");
+            if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
             _outputTemplate = new MessageTemplateParser().Parse(outputTemplate);
             _formatProvider = formatProvider;
         }
 
         public void Emit(LogEvent logEvent)
         {
-            if (logEvent == null) throw new ArgumentNullException("logEvent");
+            if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
 
             var outputProperties = OutputProperties.GetOutputProperties(logEvent);
             
@@ -120,11 +118,7 @@ namespace Serilog.Sinks.Literate
 
         void RenderExceptionToken(
             PropertyToken outputToken,
-#if NET40
-            IDictionary<string, LogEventPropertyValue> outputProperties)
-#else
             IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
-#endif
         {
             var sw = new StringWriter();
             outputToken.Render(outputProperties, sw, _formatProvider);
@@ -139,11 +133,7 @@ namespace Serilog.Sinks.Literate
 
         void RenderOutputTemplatePropertyToken(
             PropertyToken outputToken,
-#if NET40
-            IDictionary<string, LogEventPropertyValue> outputProperties)
-#else
             IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
-#endif
         {
             Console.ForegroundColor = Subtext;
 
@@ -161,7 +151,7 @@ namespace Serilog.Sinks.Literate
             // rendering and support some additional formats: 'u' for uppercase
             // and 'w' for lowercase.
             var sv = propertyValue as ScalarValue;
-            if (sv != null && sv.Value is string)
+            if (sv?.Value is string)
             {
                 var overridden = new Dictionary<string, LogEventPropertyValue>
                 {
@@ -196,11 +186,7 @@ namespace Serilog.Sinks.Literate
 
         void RenderOutputTemplateTextToken(
             MessageTemplateToken outputToken,
-#if NET40
-            IDictionary<string, LogEventPropertyValue> outputProperties)
-#else
             IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
-#endif
         {
             Console.ForegroundColor = Punctuation;
             outputToken.Render(outputProperties, Console.Out, _formatProvider);
@@ -349,7 +335,7 @@ namespace Serilog.Sinks.Literate
             if (scalar.Value is string)
                 return StringSymbol;
             
-            if (scalar.Value.GetType().IsPrimitive || scalar.Value is decimal)
+            if (scalar.Value.GetType().GetTypeInfo().IsPrimitive || scalar.Value is decimal)
                 return NumericSymbol;
             
             return OtherSymbol;

@@ -27,7 +27,7 @@ namespace Serilog.Sinks.Literate
 
         public LiteralStringValue(string value)
         {
-            if (value == null) throw new ArgumentNullException("value");
+            if (value == null) throw new ArgumentNullException(nameof(value));
             _value = value;
         }
 
