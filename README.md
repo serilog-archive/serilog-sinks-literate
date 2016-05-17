@@ -1,6 +1,6 @@
 # Serilog.Sinks.Literate [![Build status](https://ci.appveyor.com/api/projects/status/nrj4s6rbgtf4210m/branch/master?svg=true)](https://ci.appveyor.com/project/serilog/serilog-sinks-literate/branch/master)
 
-**Package** - [Serilog.Sinks.Literate](http://nuget.org/packages/serilog.sinks.literate) | **Platforms** - .NET 4.0+
+**Package** - [Serilog.Sinks.Literate](http://nuget.org/packages/serilog.sinks.literate) | **Platforms** - .NET 4.5+, .NET Core RC2+
 
 An alternative colored console sink for Serilog that uses a [literate programming](http://en.wikipedia.org/wiki/Literate_programming)-inspired presentation to showcase the structure/type of event data.
 
