@@ -4,7 +4,7 @@
   "authors": [ "Serilog Contributors" ],
   "packOptions": {
     "tags": [ "serilog", "literate", "logging" ],
-    "projectUrl": "https://github.com/serilog/serilog-sinks-seq",
+    "projectUrl": "https://github.com/serilog/serilog-sinks-literate",
     "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
     "iconUrl": "http://serilog.net/images/serilog-sink-nuget.png"
   },
