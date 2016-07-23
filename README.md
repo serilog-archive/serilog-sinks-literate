@@ -2,6 +2,8 @@
 
 An alternative colored console sink for Serilog that uses a [literate programming](http://en.wikipedia.org/wiki/Literate_programming)-inspired presentation to showcase the structure/type of event data.  This is in contrast with the [ColoredConsole](https://github.com/serilog/serilog-sinks-coloredconsole) sink that uses color predominantly to emphasise an event's level.
 
+![Screenshot](https://raw.githubusercontent.com/serilog/serilog-sinks-literate/dev/assets/Screenshot.png)
+
 ### Getting started
 
 Install the [Serilog.Sinks.Literate](https://nuget.org/packages/serilog.sinks.literate) package from NuGet:
