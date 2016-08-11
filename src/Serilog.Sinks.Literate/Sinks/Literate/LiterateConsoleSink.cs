@@ -47,24 +47,22 @@ namespace Serilog.Sinks.Literate
 
         class LevelFormat
         {
-            public LevelFormat(string description, ConsoleColor color)
+            public LevelFormat(ConsoleColor color)
             {
-                Description = description;
                 Color = color;
             }
 
-            public string Description { get; }
             public ConsoleColor Color { get; }
         }
 
         readonly IDictionary<LogEventLevel, LevelFormat> _levels = new Dictionary<LogEventLevel, LevelFormat>
         {
-            { LogEventLevel.Verbose, new LevelFormat("VRB", VerboseLevel) },
-            { LogEventLevel.Debug, new LevelFormat("DBG", DebugLevel) },
-            { LogEventLevel.Information, new LevelFormat("INF", InformationLevel) },
-            { LogEventLevel.Warning, new LevelFormat("WRN", WarningLevel) },
-            { LogEventLevel.Error, new LevelFormat("ERR", ErrorLevel) },
-            { LogEventLevel.Fatal, new LevelFormat("FTL", FatalLevel) },
+            { LogEventLevel.Verbose, new LevelFormat(VerboseLevel) },
+            { LogEventLevel.Debug, new LevelFormat(DebugLevel) },
+            { LogEventLevel.Information, new LevelFormat(InformationLevel) },
+            { LogEventLevel.Warning, new LevelFormat(WarningLevel) },
+            { LogEventLevel.Error, new LevelFormat(ErrorLevel) },
+            { LogEventLevel.Fatal, new LevelFormat(FatalLevel) },
         };
 
         readonly IFormatProvider _formatProvider;
@@ -98,7 +96,7 @@ namespace Serilog.Sinks.Literate
                         else switch (propertyToken.PropertyName)
                         {
                             case OutputProperties.LevelPropertyName:
-                                RenderLevelToken(logEvent.Level);
+                                RenderLevelToken(logEvent.Level, outputToken, outputProperties);
                                 break;
                             case OutputProperties.MessagePropertyName:
                                 RenderMessageToken(logEvent);
@@ -166,7 +164,7 @@ namespace Serilog.Sinks.Literate
             }
         }
 
-        void RenderLevelToken(LogEventLevel level)
+        void RenderLevelToken(LogEventLevel level, MessageTemplateToken token, IReadOnlyDictionary<string, LogEventPropertyValue> properties)
         {
             LevelFormat format;
             if (!_levels.TryGetValue(level, out format))
@@ -180,7 +178,7 @@ namespace Serilog.Sinks.Literate
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
-            Console.Write(format.Description);
+            token.Render(properties, Console.Out);
             Console.ResetColor();
         }
 
