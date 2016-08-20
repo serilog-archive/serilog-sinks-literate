@@ -45,8 +45,8 @@ In your application's `App.config` or `Web.config` file, specify the literate si
   <appSettings>
     <add key="serilog:using" value="Serilog.Sinks.Literate" />
     <add key="serilog:write-to:LiterateConsole" />
-  <appSettings>
-<configuration>
+  </appSettings>
+</configuration>
 ```
 
 
