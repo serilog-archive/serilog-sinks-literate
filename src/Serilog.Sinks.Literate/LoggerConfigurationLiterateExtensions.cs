@@ -35,16 +35,18 @@ namespace Serilog
         /// <param name="outputTemplate">A message template describing the format used to write to the sink.
         /// the default is "{Timestamp} [{Level}] {Message}{NewLine}{Exception}".</param>
         /// <param name="formatProvider">Supplies culture-specific formatting information, or null.</param>
+        /// <param name="standardErrorFromLevel">Specifies the level at which events will be written to standard error.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration LiterateConsole(
             this LoggerSinkConfiguration sinkConfiguration,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
             string outputTemplate = DefaultOutputTemplate,
-            IFormatProvider formatProvider = null)
+            IFormatProvider formatProvider = null,
+            LogEventLevel? standardErrorFromLevel = null)
         {
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
             if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
-            return sinkConfiguration.Sink(new LiterateConsoleSink(outputTemplate, formatProvider), restrictedToMinimumLevel);
+            return sinkConfiguration.Sink(new LiterateConsoleSink(outputTemplate, formatProvider, standardErrorFromLevel), restrictedToMinimumLevel);
         }
     }
 }

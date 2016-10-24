@@ -68,12 +68,17 @@ namespace Serilog.Sinks.Literate
         readonly IFormatProvider _formatProvider;
         readonly object _syncRoot = new object();
         readonly MessageTemplate _outputTemplate;
+        readonly LogEventLevel? _standardErrorFromLevel;
 
-        public LiterateConsoleSink(string outputTemplate, IFormatProvider formatProvider)
+        public LiterateConsoleSink(
+            string outputTemplate,
+            IFormatProvider formatProvider,
+            LogEventLevel? standardErrorFromLevel)
         {
             if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
             _outputTemplate = new MessageTemplateParser().Parse(outputTemplate);
             _formatProvider = formatProvider;
+            _standardErrorFromLevel = standardErrorFromLevel;
         }
 
         public void Emit(LogEvent logEvent)
@@ -81,7 +86,7 @@ namespace Serilog.Sinks.Literate
             if (logEvent == null) throw new ArgumentNullException(nameof(logEvent));
 
             var outputProperties = OutputProperties.GetOutputProperties(logEvent);
-            
+            var outputStream = GetOutputStream(logEvent.Level);
             lock (_syncRoot)
             {
                 try
@@ -91,21 +96,21 @@ namespace Serilog.Sinks.Literate
                         var propertyToken = outputToken as PropertyToken;
                         if (propertyToken == null)
                         {
-                            RenderOutputTemplateTextToken(outputToken, outputProperties);
+                            RenderOutputTemplateTextToken(outputToken, outputProperties, outputStream);
                         }
                         else switch (propertyToken.PropertyName)
                         {
                             case OutputProperties.LevelPropertyName:
-                                RenderLevelToken(logEvent.Level, outputToken, outputProperties);
+                                RenderLevelToken(logEvent.Level, outputToken, outputProperties, outputStream);
                                 break;
                             case OutputProperties.MessagePropertyName:
-                                RenderMessageToken(logEvent);
+                                RenderMessageToken(logEvent, outputStream);
                                 break;
                             case OutputProperties.ExceptionPropertyName:
-                                RenderExceptionToken(propertyToken, outputProperties);
+                                RenderExceptionToken(propertyToken, outputProperties, outputStream);
                                 break;
                             default:
-                                RenderOutputTemplatePropertyToken(propertyToken, outputProperties);
+                                RenderOutputTemplatePropertyToken(propertyToken, outputProperties, outputStream);
                                 break;
                         }
                     }
@@ -116,7 +121,8 @@ namespace Serilog.Sinks.Literate
 
         void RenderExceptionToken(
             PropertyToken outputToken,
-            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties,
+            TextWriter outputStream)
         {
             var sw = new StringWriter();
             outputToken.Render(outputProperties, sw, _formatProvider);
@@ -125,13 +131,14 @@ namespace Serilog.Sinks.Literate
             while ((nextLine = lines.ReadLine()) != null)
             {
                 Console.ForegroundColor = nextLine.StartsWith(StackFrameLinePrefix) ? Subtext : Text;
-                Console.WriteLine(nextLine);
+                outputStream.WriteLine(nextLine);
             }
         }
 
         void RenderOutputTemplatePropertyToken(
             PropertyToken outputToken,
-            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties,
+            TextWriter outputStream)
         {
             Console.ForegroundColor = Subtext;
 
@@ -156,15 +163,19 @@ namespace Serilog.Sinks.Literate
                     { outputToken.PropertyName, new LiteralStringValue((string) sv.Value) }
                 };
 
-                outputToken.Render(overridden, Console.Out, _formatProvider);
+                outputToken.Render(overridden, outputStream, _formatProvider);
             }
             else
             {
-                outputToken.Render(outputProperties, Console.Out, _formatProvider);
+                outputToken.Render(outputProperties, outputStream, _formatProvider);
             }
         }
 
-        void RenderLevelToken(LogEventLevel level, MessageTemplateToken token, IReadOnlyDictionary<string, LogEventPropertyValue> properties)
+        void RenderLevelToken(
+            LogEventLevel level,
+            MessageTemplateToken token,
+            IReadOnlyDictionary<string, LogEventPropertyValue> properties,
+            TextWriter outputStream)
         {
             LevelFormat format;
             if (!_levels.TryGetValue(level, out format))
@@ -178,19 +189,20 @@ namespace Serilog.Sinks.Literate
                 Console.ForegroundColor = ConsoleColor.White;
             }
 
-            token.Render(properties, Console.Out);
+            token.Render(properties, outputStream);
             Console.ResetColor();
         }
 
         void RenderOutputTemplateTextToken(
             MessageTemplateToken outputToken,
-            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties)
+            IReadOnlyDictionary<string, LogEventPropertyValue> outputProperties,
+            TextWriter outputStream)
         {
             Console.ForegroundColor = Punctuation;
-            outputToken.Render(outputProperties, Console.Out, _formatProvider);
+            outputToken.Render(outputProperties, outputStream, _formatProvider);
         }
 
-        void RenderMessageToken(LogEvent logEvent)
+        void RenderMessageToken(LogEvent logEvent, TextWriter outputStream)
         {
             foreach (var messageToken in logEvent.MessageTemplate.Tokens)
             {
@@ -201,7 +213,7 @@ namespace Serilog.Sinks.Literate
                     if (!logEvent.Properties.TryGetValue(messagePropertyToken.PropertyName, out value))
                     {
                         Console.ForegroundColor = RawText;
-                        Console.Write(messagePropertyToken);
+                        outputStream.Write(messagePropertyToken);
                     }
                     else
                     {
@@ -211,33 +223,37 @@ namespace Serilog.Sinks.Literate
                             Console.ForegroundColor = GetScalarColor(scalar);
 
                             if (scalar.Value is string && messagePropertyToken.Format == null && messagePropertyToken.Alignment == null)
-                                Console.Write(scalar.Value);
+                                outputStream.Write(scalar.Value);
                             else if (scalar.Value is bool && messagePropertyToken.Format == null && messagePropertyToken.Alignment == null)
-                                Console.Write(scalar.Value.ToString().ToLowerInvariant());
+                                outputStream.Write(scalar.Value.ToString().ToLowerInvariant());
                             else
-                                messagePropertyToken.Render(logEvent.Properties, Console.Out, _formatProvider);
+                                messagePropertyToken.Render(logEvent.Properties, outputStream, _formatProvider);
                         }
                         else
                         {
-                            PrettyPrint(value, messagePropertyToken.Format, _formatProvider);
+                            PrettyPrint(value, messagePropertyToken.Format, _formatProvider, outputStream);
                         }
                     }
                 }
                 else
                 {
                     Console.ForegroundColor = Text;
-                    messageToken.Render(logEvent.Properties, Console.Out, _formatProvider);
+                    messageToken.Render(logEvent.Properties, outputStream, _formatProvider);
                 }
             }
         }
 
-        void PrettyPrint(LogEventPropertyValue value, string format, IFormatProvider formatProvider)
+        void PrettyPrint(
+            LogEventPropertyValue value,
+            string format,
+            IFormatProvider formatProvider,
+            TextWriter outputStream)
         {
             var scalar = value as ScalarValue;
             if (scalar != null)
             {
                 Console.ForegroundColor = GetScalarColor(scalar);
-                value.Render(Console.Out, format, formatProvider);
+                value.Render(outputStream, format, formatProvider);
                 return;
             }
 
@@ -245,20 +261,20 @@ namespace Serilog.Sinks.Literate
             if (seq != null)
             {
                 Console.ForegroundColor = Punctuation;
-                Console.Write("[");
+                outputStream.Write("[");
 
                 var sep = "";
                 foreach (var element in seq.Elements)
                 {
                     Console.ForegroundColor = Punctuation;
-                    Console.Write(sep);
+                    outputStream.Write(sep);
                     sep = ", ";
 
-                    PrettyPrint(element, null, formatProvider);
+                    PrettyPrint(element, null, formatProvider, outputStream);
                 }
 
                 Console.ForegroundColor = Punctuation;
-                Console.Write("]");
+                outputStream.Write("]");
                 return;
             }
 
@@ -268,31 +284,31 @@ namespace Serilog.Sinks.Literate
                 if (str.TypeTag != null)
                 {
                     Console.ForegroundColor = Subtext;
-                    Console.Write(str.TypeTag);
-                    Console.Write(" ");
+                    outputStream.Write(str.TypeTag);
+                    outputStream.Write(" ");
                 }
 
                 Console.ForegroundColor = Punctuation;
-                Console.Write("{");
+                outputStream.Write("{");
 
                 var sep = "";
                 foreach (var prop in str.Properties)
                 {
                     Console.ForegroundColor = Punctuation;
-                    Console.Write(sep);
+                    outputStream.Write(sep);
                     sep = ", ";
 
                     Console.ForegroundColor = NameSymbol;
-                    Console.Write(prop.Name);
+                    outputStream.Write(prop.Name);
 
                     Console.ForegroundColor = Punctuation;
-                    Console.Write("=");
+                    outputStream.Write("=");
 
-                    PrettyPrint(prop.Value, null, formatProvider);
+                    PrettyPrint(prop.Value, null, formatProvider, outputStream);
                 }
 
                 Console.ForegroundColor = Punctuation;
-                Console.Write("}");
+                outputStream.Write("}");
                 return;
             }
 
@@ -300,43 +316,52 @@ namespace Serilog.Sinks.Literate
             if (div != null)
             {
                 Console.ForegroundColor = Punctuation;
-                Console.Write("{");
+                outputStream.Write("{");
 
                 var sep = "";
                 foreach (var element in div.Elements)
                 {
                     Console.ForegroundColor = Punctuation;
-                    Console.Write(sep);
+                    outputStream.Write(sep);
                     sep = ", ";
-                    Console.Write("[");
-                    PrettyPrint(element.Key, null, formatProvider);
+                    outputStream.Write("[");
+                    PrettyPrint(element.Key, null, formatProvider, outputStream);
 
                     Console.ForegroundColor = Punctuation;
-                    Console.Write("]=");
+                    outputStream.Write("]=");
 
-                    PrettyPrint(element.Value, null, formatProvider);
+                    PrettyPrint(element.Value, null, formatProvider, outputStream);
                 }
 
                 Console.ForegroundColor = Punctuation;
-                Console.Write("}");
+                outputStream.Write("}");
                 return;
             }
 
-            value.Render(Console.Out, format, formatProvider);
+            value.Render(outputStream, format, formatProvider);
         }
 
         ConsoleColor GetScalarColor(ScalarValue scalar)
         {
             if (scalar.Value == null || scalar.Value is bool)
                 return KeywordSymbol;
-            
+
             if (scalar.Value is string)
                 return StringSymbol;
-            
+
             if (scalar.Value.GetType().GetTypeInfo().IsPrimitive || scalar.Value is decimal)
                 return NumericSymbol;
-            
+
             return OtherSymbol;
+        }
+
+        TextWriter GetOutputStream(LogEventLevel logLevel)
+         {
+            if (!_standardErrorFromLevel.HasValue)
+            {
+                return Console.Out;
+            }
+            return logLevel < _standardErrorFromLevel ? Console.Out : Console.Error;
         }
     }
 }
