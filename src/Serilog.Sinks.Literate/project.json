@@ -1,16 +1,17 @@
 ﻿{
-  "version": "2.0.0",
+  "version": "2.1.0-*",
   "description": "An alternative colored console sink for Serilog that pretty-prints properties.",
   "authors": [ "Serilog Contributors" ],
   "packOptions": {
     "tags": [ "serilog", "literate", "logging" ],
-    "projectUrl": "https://github.com/serilog/serilog-sinks-seq",
+    "projectUrl": "https://github.com/serilog/serilog-sinks-literate",
     "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
     "iconUrl": "http://serilog.net/images/serilog-sink-nuget.png"
   },
   "buildOptions": {
     "keyFile": "../../assets/Serilog.snk",
-    "xmlDoc": true
+    "xmlDoc": true,
+    "warningsAsErrors": true
   },
   "dependencies": {
     "Serilog": "2.0.0"
