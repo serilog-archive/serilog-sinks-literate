@@ -1,5 +1,5 @@
-﻿{
-  "version": "2.1.0-*",
+{
+  "version": "2.1.1-*",
   "description": "An alternative colored console sink for Serilog that pretty-prints properties.",
   "authors": [ "Serilog Contributors" ],
   "packOptions": {
