@@ -24,7 +24,7 @@ Log.Information("This will be written to the literate console");
 
 ### XML `<appSettings>` configuration
 
-To use the rolling file sink with the [Serilog.Settings.AppSettings](https://github.com/serilog/serilog-settings-appsettings) package, first install that package if you haven't already done so:
+To use the literate console sink with the [Serilog.Settings.AppSettings](https://github.com/serilog/serilog-settings-appsettings) package, first install that package if you haven't already done so:
 
 ```powershell
 Install-Package Serilog.Settings.AppSettings
