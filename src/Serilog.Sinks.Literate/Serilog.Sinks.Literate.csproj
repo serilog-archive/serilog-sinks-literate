@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <Description>An alternative colored console sink for Serilog that pretty-prints properties.</Description>
-    <VersionPrefix>2.1.1</VersionPrefix>
+    <AssemblyVersion>3.0.0</AssemblyVersion>
+    <RootNamespace>Serilog</RootNamespace>
+    <VersionPrefix>3.0.0</VersionPrefix>
     <Authors>Serilog Contributors</Authors>
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -24,16 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="2.3.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Console" Version="4.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.0.1" />
   </ItemGroup>
 
 </Project>
