@@ -15,7 +15,7 @@
 using System;
 using Serilog.Configuration;
 using Serilog.Events;
-using Serilog.Sinks.Literate;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Serilog
 {
@@ -24,7 +24,7 @@ namespace Serilog
     /// </summary>
     public static class LoggerConfigurationLiterateExtensions
     {
-        const string DefaultOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message}{NewLine}{Exception}";
+        const string DefaultOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:l}{NewLine}{Exception}";
 
         /// <summary>
         /// Writes log events to <see cref="System.Console"/>, using pretty printing to display inline event data.
@@ -46,7 +46,12 @@ namespace Serilog
         {
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
             if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
-            return sinkConfiguration.Sink(new LiterateConsoleSink(outputTemplate, formatProvider, standardErrorFromLevel), restrictedToMinimumLevel);
+            return sinkConfiguration.Console(
+                outputTemplate: outputTemplate,
+                formatProvider: formatProvider,
+                standardErrorFromLevel: standardErrorFromLevel, 
+                theme: SystemConsoleTheme.Literate,
+                restrictedToMinimumLevel: restrictedToMinimumLevel);
         }
     }
 }

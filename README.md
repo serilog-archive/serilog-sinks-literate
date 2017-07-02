@@ -4,6 +4,10 @@ An alternative colored console sink for Serilog that uses a [literate programmin
 
 ![Screenshot](https://raw.githubusercontent.com/serilog/serilog-sinks-literate/dev/assets/Screenshot.png)
 
+### This package is being retired
+
+The features of this sink have now been merged into the default Serilog console sink. We recommend using [the console sink](https://github.com/serilog/serilog-sinks-console) instead.
+
 ### Getting started
 
 Install the [Serilog.Sinks.Literate](https://nuget.org/packages/serilog.sinks.literate) package from NuGet:
