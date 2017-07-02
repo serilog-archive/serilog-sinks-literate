@@ -4,6 +4,10 @@ An alternative colored console sink for Serilog that uses a [literate programmin
 
 ![Screenshot](https://raw.githubusercontent.com/serilog/serilog-sinks-literate/dev/assets/Screenshot.png)
 
+### This package is being retired
+
+The features of this sink have now been merged into the default Serilog console sink. We recommend using [the console sink](https://github.com/serilog/serilog-sinks-console) instead.
+
 ### Getting started
 
 Install the [Serilog.Sinks.Literate](https://nuget.org/packages/serilog.sinks.literate) package from NuGet:
@@ -24,7 +28,7 @@ Log.Information("This will be written to the literate console");
 
 ### XML `<appSettings>` configuration
 
-To use the rolling file sink with the [Serilog.Settings.AppSettings](https://github.com/serilog/serilog-settings-appsettings) package, first install that package if you haven't already done so:
+To use the literate console sink with the [Serilog.Settings.AppSettings](https://github.com/serilog/serilog-settings-appsettings) package, first install that package if you haven't already done so:
 
 ```powershell
 Install-Package Serilog.Settings.AppSettings
