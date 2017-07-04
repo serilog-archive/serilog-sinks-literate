@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Now replaced by Serilog.Sinks.Console, please use that package instead. An alternative colored console sink for Serilog that pretty-prints properties.</Description>
-    <AssemblyVersion>3.0.0</AssemblyVersion>
     <RootNamespace>Serilog</RootNamespace>
     <VersionPrefix>3.0.1</VersionPrefix>
     <Authors>Serilog Contributors</Authors>
